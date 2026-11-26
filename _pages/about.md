@@ -1,6 +1,6 @@
 ---
 layout: about
-title: about
+title: About
 permalink: /
 subtitle: Machine Learning MSc student, <a href="https://uni-tuebingen.de/">University of Tübingen</a>
 

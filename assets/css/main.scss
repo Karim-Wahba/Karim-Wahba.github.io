@@ -49,3 +49,6 @@ html[data-theme="dark"] {
   --global-theme-color: #6fbf73;
   --global-hover-color: #6fbf73;
 }
+
+/* ---- Karim Wahba (2026-11-27): capitalized section headings ("News", "Selected Publications"); the theme writes them in lower case */
+.post h2, .navbar .nav-link { text-transform: capitalize; }
