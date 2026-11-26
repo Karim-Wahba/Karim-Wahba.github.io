@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WISH: Word-Informed Selection of Heads for Vision-Language Explainability</title>
+  <meta name="description" content="WISH explains each word a vision-language model generates by selecting the attention heads whose visual attention matters most for that word.">
+  <meta property="og:title" content="WISH: Word-Informed Selection of Heads for Vision-Language Explainability">
+  <meta property="og:description" content="Word-level visual explanations for vision-language models from the attention heads that matter for each word.">
+  <meta property="og:image" content="https://karim-wahba.github.io/wish/static/images/teaser.webp">
+  <meta property="og:url" content="https://karim-wahba.github.io/wish/">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Castoro&family=Noto+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.9.4/css/academicons.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <link rel="stylesheet" href="static/css/wish.css">
+</head>
+<body>
+
+<nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
+  <div class="navbar-brand">
+    <a class="navbar-item home-link" href="https://karim-wahba.github.io/"><i class="fas fa-house"></i></a>
+    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="wishNav">
+      <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+    </a>
+  </div>
+  <div class="navbar-menu" id="wishNav">
+    <div class="navbar-start">
+      <a class="navbar-item" href="#abstract">Abstract</a>
+      <a class="navbar-item" href="#explorer">Explorer</a>
+      <a class="navbar-item" href="#method">Method</a>
+      <a class="navbar-item" href="#look-ahead">Look-ahead grounding</a>
+      <a class="navbar-item" href="#results">Results</a>
+      <a class="navbar-item" href="#bibtex">BibTeX</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-body">
+    <div class="container is-max-desktop has-text-centered">
+      <h1 class="title is-1 publication-title"><span class="acronym">WISH</span>: <span class="acr">W</span>ord-<span class="acr">I</span>nformed <span class="acr">S</span>election of <span class="acr">H</span>eads for Vision-Language Explainability</h1>
+      <div class="is-size-5 publication-authors">
+        <span class="author-block"><a href="https://karim-wahba.github.io/">Karim Wahba</a><sup>1</sup>,</span>
+        <span class="author-block"><a href="https://madhavesdios.github.io/">Madhav Iyengar</a><sup>1</sup>,</span>
+        <span class="author-block"><a href="https://walidbousselham.com/">Walid Bousselham</a><sup>2</sup>,</span>
+        <span class="author-block"><a href="https://hildekuehne.github.io/">Hilde Kuehne</a><sup>1</sup></span>
+      </div>
+      <div class="is-size-5 publication-authors affiliations">
+        <span class="author-block"><sup>1</sup>University of Tübingen</span>
+        <span class="author-block"><sup>2</sup>Google DeepMind</span>
+      </div>
+      <div class="publication-links">
+        <!-- TODO after the arXiv announcement: replace the two disabled buttons with
+             <a class="button is-rounded is-dark" href="https://arxiv.org/abs/XXXX.XXXXX"> ... and the code URL -->
+        <span class="link-block"><span class="button is-rounded is-dark is-static-soon" title="Coming soon"><span class="icon"><i class="fas fa-file-pdf"></i></span><span>Paper (soon)</span></span></span>
+        <span class="link-block"><span class="button is-rounded is-dark is-static-soon" title="Coming soon"><span class="icon"><i class="ai ai-arxiv"></i></span><span>arXiv (soon)</span></span></span>
+        <span class="link-block"><span class="button is-rounded is-dark is-static-soon" title="Coming soon"><span class="icon"><i class="fab fa-github"></i></span><span>Code (soon)</span></span></span>
+        <span class="link-block"><a class="button is-rounded is-dark" href="#bibtex"><span class="icon"><i class="fas fa-quote-right"></i></span><span>BibTeX</span></a></span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section pt-0">
+  <div class="container is-max-desktop">
+    <p class="tldr"><strong>TL;DR</strong> WISH explains each word a vision-language model generates. It ranks every attention head by how much blocking the head's view of the image would lower the word's logit, keeps the top heads and builds the heatmap from them only. Its maps also show that models look at an object while writing the article that introduces it.</p>
+  </div>
+</section>
+
+<section class="section" id="abstract">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Abstract</h2>
+    <div class="content has-text-justified">
+      <p>Vision-language models (VLMs) are being increasingly employed for vision-language tasks. However, understanding the visual evidence behind each generated word remains a complex task. A key challenge in VLM explainability is choosing where in the model to extract this evidence. Existing methods address this by using final-layer visual-token activations or aggregating attention gradients across layers and heads. However, focusing on the final layer can miss intermediate grounding signals, while gradient weighting can misrepresent how much each head contributes. In contrast, we introduce WISH (Word-Informed Selection of Heads), a word-level explainability method that adaptively selects heads across layers to construct word-level visual explanations. WISH ranks the heads based on an estimate of how much blocking each head's visual attention would lower the word's layer logit. It subsequently selects the highest scoring heads and constructs heatmaps by spatially filtering and aggregating their gradient maps. Across six VLMs, attention knockout experiments show that WISH-selected heads have a greater effect on word prediction than those selected using five alternative criteria. Spatial map evaluations on ImageNet, VQAv2, PASCAL VOC, and COCO Captions further demonstrate improved object localization and stronger perturbation-based performance in most comparisons with existing methods. Finally, we find evidence that when VLMs generate function words, e.g., articles, their explanation heatmaps already highlight the associated objects in the image. We term this behavior &ldquo;look-ahead grounding&rdquo; and propose two evaluation metrics to quantify it.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt" id="explorer">
+  <div class="container is-max-widescreen">
+    <h2 class="title is-3 has-text-centered">Explore the maps</h2>
+    <p class="has-text-centered hint">Pick an example, then hover over or click any word of the model's own caption. Each panel shows that word's map from WISH, TAM and DEX-AR.</p>
+    <div class="ex-tabs" id="exTabs" role="tablist" aria-label="Examples"></div>
+    <div class="ex-card">
+      <div class="ex-meta"><span id="exModel"></span><span class="sep">&middot;</span><span id="exData"></span><span class="sep">&middot;</span><span id="exLabel"></span></div>
+      <p class="ex-caption" id="exCaption" aria-live="polite"></p>
+      <div class="ex-panels">
+        <figure class="ex-panel"><canvas id="cvImage" aria-label="Image"></canvas><figcaption>Image</figcaption></figure>
+        <figure class="ex-panel ex-ours"><canvas id="cvWish" aria-label="WISH map"></canvas><figcaption>WISH (ours)</figcaption></figure>
+        <figure class="ex-panel"><canvas id="cvTam" aria-label="TAM map"></canvas><figcaption>TAM</figcaption></figure>
+        <figure class="ex-panel"><canvas id="cvDexar" aria-label="DEX-AR map"></canvas><figcaption>DEX-AR</figcaption></figure>
+      </div>
+      <p class="ex-note">Each map is the word's first token, computed and shown as in the paper's figures.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="method">
+  <div class="container is-max-widescreen">
+    <h2 class="title is-3 has-text-centered">Method</h2>
+    <div class="mw">
+      <div class="mw-top">
+        <div class="mw-examples" role="tablist" aria-label="Method examples" id="mwExamples"></div>
+        <button type="button" class="button is-small is-rounded mw-play" id="mwPlay"><span class="icon"><i class="fas fa-play"></i></span><span>Play</span></button>
+      </div>
+      <ol class="mw-progress" id="mwSteps">
+        <li><button type="button" class="mw-step" data-step="1"><span>a</span>Head Ranking</button></li>
+        <li><button type="button" class="mw-step" data-step="2"><span>b</span>Adaptive Head Selection</button></li>
+        <li><button type="button" class="mw-step" data-step="3"><span>c</span>Per-Head Spatial Filtering</button></li>
+        <li><button type="button" class="mw-step" data-step="4"><span>d</span>Cross-Head Aggregation</button></li>
+      </ol>
+      <div class="mw-main">
+        <div class="mw-input">
+          <canvas id="mwImage" aria-label="Input image"></canvas>
+          <p class="mw-caption" id="mwCaption"></p>
+          <p class="mw-model" id="mwModel"></p>
+        </div>
+        <div class="mw-stagewrap">
+          <h3 class="mw-title" id="mwTitle"></h3>
+          <div class="mw-stage" id="mwStage">
+            <div class="mw-layer" data-layer="1"><div class="mw-gridbox"><canvas id="mwGrid" aria-label="Score of every attention head"></canvas>
+              <div class="mw-yaxis"><span id="mwYmax"></span><span class="mw-axtitle">layer</span><span>1</span></div>
+              <div class="mw-xaxis"><span>1</span><span class="mw-axtitle">head</span><span id="mwXmax"></span></div>
+              <div class="mw-legend"><span>low</span><i></i><span>high score</span></div></div></div>
+            <div class="mw-layer" data-layer="2"><div class="mw-bwrap">
+              <svg id="mwCurve" viewBox="0 0 440 300" role="img" aria-label="Sorted head scores with the knee"></svg>
+              <figure class="mw-minibox"><div class="mw-minigrid"><canvas id="mwMini2" aria-label="Heads from (a)"></canvas></div><figcaption id="mwMini2Cap"></figcaption></figure>
+            </div></div>
+            <div class="mw-layer" data-layer="3"><div class="mw-cwrap">
+              <figure class="mw-minibox"><div class="mw-minigrid" id="mwMini3Box"><canvas id="mwMini3" aria-label="Kept heads"></canvas></div><figcaption id="mwMini3Cap"></figcaption></figure>
+              <div class="mw-filter" id="mwFilter"></div>
+            </div></div>
+            <div class="mw-layer" data-layer="4"><div class="mw-agg" id="mwAgg"></div></div>
+          </div>
+          <p class="mw-text" id="mwText" aria-live="polite"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt" id="look-ahead">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Look-ahead grounding</h2>
+    <div class="content">
+      <p>Function words such as &ldquo;a&rdquo;, &ldquo;on&rdquo; or &ldquo;three&rdquo; carry no visual content of their own. Yet when a model writes one, WISH's map already highlights the object whose noun comes next, before the model has written that noun. We call this <em>look-ahead grounding</em>.</p>
+      <p>In the caption below, the two articles point to different objects: WISH's map for the first &ldquo;A&rdquo; lies on the woman and its map for the later &ldquo;a&rdquo; on the horse. TAM's maps for the articles are nearly empty, and DEX-AR's are spread across the image.</p>
+    </div>
+    <div class="ex-card la-card">
+      <div class="la-pick" role="tablist" aria-label="Pick an object" id="laPick"></div>
+      <p class="ex-caption" id="laCaption"></p>
+      <div class="la-grid" id="laGrid"></div>
+      <p class="ex-note">BakLLaVA's caption of a PASCAL VOC image. Top row: the article, explained before the noun is generated. Bottom row: the noun itself. Solid outline: the object the article introduces. Dashed outline: the other object.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="results">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Results</h2>
+    <p class="table-caption">Image perturbation across six VLMs on ImageNet, VQAv2, COCO Caption and PASCAL VOC. Values are the area under the log normalized-perplexity curve for deleting the most relevant pixels first (Del., higher is better) and for inserting them into a blurred image (Ins., lower is better). Best value per model in bold, second best underlined.</p>
+<div class="table-wrap"><table class="perf">
+<thead>
+<tr><th rowspan="2">Model</th><th rowspan="2">Method</th><th colspan="2">ImageNet</th><th colspan="2">VQAv2</th><th colspan="2">COCO Caption</th><th colspan="2">PASCAL VOC</th></tr>
+<tr><th>Del.&thinsp;&uarr;</th><th>Ins.&thinsp;&darr;</th><th>Del.&thinsp;&uarr;</th><th>Ins.&thinsp;&darr;</th><th>Del.&thinsp;&uarr;</th><th>Ins.&thinsp;&darr;</th><th>Del.&thinsp;&uarr;</th><th>Ins.&thinsp;&darr;</th></tr>
+</thead><tbody>
+<tr><th rowspan="7" class="model">Qwen3-VL</th><td class="meth">Attention</td><td>0.18</td><td>1.88</td><td><u>0.80</u></td><td>0.53</td><td>1.02</td><td>1.41</td><td>1.19</td><td>1.05</td></tr>
+<tr><td class="meth">Attn×Grad</td><td>0.18</td><td>1.86</td><td>0.78</td><td>0.53</td><td>1.00</td><td>1.42</td><td>1.29</td><td>0.98</td></tr>
+<tr><td class="meth">Grad-CAM</td><td>0.30</td><td>1.66</td><td>0.75</td><td>0.54</td><td><u>1.10</u></td><td>1.27</td><td>1.24</td><td>0.94</td></tr>
+<tr><td class="meth">Chefer-CAM</td><td>0.44</td><td>1.44</td><td>0.65</td><td>0.48</td><td>1.06</td><td>1.31</td><td>1.11</td><td>1.08</td></tr>
+<tr><td class="meth">DEX-AR</td><td><u>0.68</u></td><td>1.31</td><td>0.79</td><td>0.55</td><td><u>1.10</u></td><td>1.25</td><td>1.54</td><td>0.95</td></tr>
+<tr><td class="meth">TAM</td><td>0.62</td><td><u>0.71</u></td><td>0.67</td><td><u>0.45</u></td><td>1.01</td><td><u>1.24</u></td><td><u>1.67</u></td><td><u>0.64</u></td></tr>
+<tr class="ours"><td class="meth">WISH</td><td><strong>1.03</strong></td><td><strong>0.56</strong></td><td><strong>0.92</strong></td><td><strong>0.40</strong></td><td><strong>1.27</strong></td><td><strong>0.99</strong></td><td><strong>1.99</strong></td><td><strong>0.59</strong></td></tr>
+<tr><th rowspan="7" class="model">LLaVA-1.5</th><td class="meth">Attention</td><td>0.67</td><td>0.24</td><td>0.44</td><td>0.07</td><td>0.62</td><td>0.27</td><td>1.91</td><td>0.62</td></tr>
+<tr><td class="meth">Attn×Grad</td><td>0.71</td><td>0.19</td><td><u>0.46</u></td><td><u>0.06</u></td><td>0.64</td><td>0.26</td><td>2.20</td><td>0.53</td></tr>
+<tr><td class="meth">Grad-CAM</td><td>0.68</td><td>0.20</td><td>0.45</td><td><strong>0.05</strong></td><td>0.62</td><td>0.26</td><td>1.77</td><td>0.60</td></tr>
+<tr><td class="meth">Chefer-CAM</td><td>0.63</td><td>0.24</td><td><u>0.46</u></td><td><strong>0.05</strong></td><td>0.61</td><td>0.26</td><td>1.76</td><td>0.59</td></tr>
+<tr><td class="meth">DEX-AR</td><td>0.71</td><td>0.20</td><td>0.42</td><td>0.09</td><td><u>0.65</u></td><td>0.29</td><td>2.48</td><td>0.48</td></tr>
+<tr><td class="meth">TAM</td><td><u>0.73</u></td><td><strong>0.14</strong></td><td>0.42</td><td>0.14</td><td><u>0.65</u></td><td><u>0.21</u></td><td><u>2.66</u></td><td><u>0.43</u></td></tr>
+<tr class="ours"><td class="meth">WISH</td><td><strong>0.75</strong></td><td><u>0.16</u></td><td><strong>0.49</strong></td><td><strong>0.05</strong></td><td><strong>0.72</strong></td><td><strong>0.19</strong></td><td><strong>2.71</strong></td><td><strong>0.37</strong></td></tr>
+<tr><th rowspan="7" class="model">GLM-4.6V</th><td class="meth">Attention</td><td>0.31</td><td>1.29</td><td>1.09</td><td>0.74</td><td>0.76</td><td>0.92</td><td>1.08</td><td>0.87</td></tr>
+<tr><td class="meth">Attn×Grad</td><td>0.32</td><td>1.27</td><td>1.14</td><td>0.70</td><td>0.76</td><td>0.92</td><td>1.16</td><td>0.85</td></tr>
+<tr><td class="meth">Grad-CAM</td><td>0.40</td><td>1.19</td><td><strong>1.32</strong></td><td>0.67</td><td>0.88</td><td><u>0.80</u></td><td><u>1.21</u></td><td><u>0.80</u></td></tr>
+<tr><td class="meth">Chefer-CAM</td><td>0.37</td><td>1.10</td><td><u>1.26</u></td><td><strong>0.62</strong></td><td>0.83</td><td>0.84</td><td>1.17</td><td>0.83</td></tr>
+<tr><td class="meth">DEX-AR</td><td><strong>0.82</strong></td><td>0.74</td><td>1.24</td><td><u>0.65</u></td><td><strong>0.96</strong></td><td><strong>0.72</strong></td><td>1.08</td><td>0.89</td></tr>
+<tr><td class="meth">TAM</td><td>0.55</td><td><u>0.60</u></td><td>0.90</td><td>0.86</td><td>0.68</td><td>0.95</td><td>1.03</td><td>0.92</td></tr>
+<tr class="ours"><td class="meth">WISH</td><td><u>0.68</u></td><td><strong>0.52</strong></td><td>1.11</td><td>0.72</td><td><u>0.93</u></td><td><strong>0.72</strong></td><td><strong>1.32</strong></td><td><strong>0.62</strong></td></tr>
+<tr><th rowspan="7" class="model">BakLLaVA</th><td class="meth">Attention</td><td>2.12</td><td>1.50</td><td>0.42</td><td>0.04</td><td>1.12</td><td>0.45</td><td>2.63</td><td>0.73</td></tr>
+<tr><td class="meth">Attn×Grad</td><td>2.22</td><td>1.43</td><td>0.43</td><td>0.03</td><td><u>1.14</u></td><td>0.44</td><td>2.85</td><td>0.63</td></tr>
+<tr><td class="meth">Grad-CAM</td><td><strong>2.25</strong></td><td>1.43</td><td>0.43</td><td>0.04</td><td>1.13</td><td>0.43</td><td>2.57</td><td>0.71</td></tr>
+<tr><td class="meth">Chefer-CAM</td><td><u>2.24</u></td><td>1.39</td><td>0.45</td><td><u>0.02</u></td><td><u>1.14</u></td><td>0.44</td><td>2.56</td><td>0.70</td></tr>
+<tr><td class="meth">DEX-AR</td><td>2.23</td><td>1.28</td><td>0.37</td><td>0.06</td><td>0.96</td><td>0.57</td><td><u>3.05</u></td><td>0.59</td></tr>
+<tr><td class="meth">TAM</td><td>1.87</td><td><u>1.16</u></td><td><u>0.47</u></td><td><u>0.02</u></td><td>1.02</td><td><u>0.42</u></td><td>3.01</td><td><u>0.56</u></td></tr>
+<tr class="ours"><td class="meth">WISH</td><td>2.14</td><td><strong>1.06</strong></td><td><strong>0.49</strong></td><td><strong>0.01</strong></td><td><strong>1.20</strong></td><td><strong>0.34</strong></td><td><strong>3.36</strong></td><td><strong>0.48</strong></td></tr>
+<tr><th rowspan="7" class="model">OV-1.5</th><td class="meth">Attention</td><td>1.62</td><td>1.99</td><td>0.29</td><td>−0.01</td><td><u>0.72</u></td><td>0.45</td><td>1.51</td><td>0.73</td></tr>
+<tr><td class="meth">Attn×Grad</td><td>1.73</td><td>1.91</td><td><u>0.30</u></td><td>−0.01</td><td><u>0.72</u></td><td>0.45</td><td>1.64</td><td>0.72</td></tr>
+<tr><td class="meth">Grad-CAM</td><td>1.79</td><td>1.90</td><td>0.27</td><td><u>−0.02</u></td><td>0.70</td><td>0.47</td><td>1.38</td><td>0.77</td></tr>
+<tr><td class="meth">Chefer-CAM</td><td>1.51</td><td>1.97</td><td>0.23</td><td>0.01</td><td><u>0.72</u></td><td>0.45</td><td>1.37</td><td>0.79</td></tr>
+<tr><td class="meth">DEX-AR</td><td><strong>2.04</strong></td><td>1.68</td><td>0.19</td><td>0.07</td><td>0.65</td><td>0.53</td><td><u>1.69</u></td><td>0.86</td></tr>
+<tr><td class="meth">TAM</td><td>1.72</td><td><u>1.19</u></td><td>0.22</td><td>0.08</td><td>0.68</td><td><u>0.40</u></td><td>1.51</td><td><u>0.55</u></td></tr>
+<tr class="ours"><td class="meth">WISH</td><td><u>1.96</u></td><td><strong>1.05</strong></td><td><strong>0.39</strong></td><td><strong>−0.03</strong></td><td><strong>0.77</strong></td><td><strong>0.35</strong></td><td><strong>1.98</strong></td><td><strong>0.49</strong></td></tr>
+<tr><th rowspan="7" class="model">OV-2</th><td class="meth">Attention</td><td>0.70</td><td>1.00</td><td><u>0.71</u></td><td>0.27</td><td><u>0.63</u></td><td>0.40</td><td>1.32</td><td>0.72</td></tr>
+<tr><td class="meth">Attn×Grad</td><td>0.75</td><td>0.94</td><td><strong>0.72</strong></td><td><u>0.25</u></td><td>0.61</td><td>0.41</td><td>1.46</td><td>0.68</td></tr>
+<tr><td class="meth">Grad-CAM</td><td>0.74</td><td>0.98</td><td>0.70</td><td>0.28</td><td>0.56</td><td>0.47</td><td>1.06</td><td>0.82</td></tr>
+<tr><td class="meth">Chefer-CAM</td><td>0.73</td><td>0.97</td><td>0.66</td><td>0.26</td><td>0.62</td><td>0.40</td><td>1.16</td><td>0.73</td></tr>
+<tr><td class="meth">DEX-AR</td><td>0.97</td><td>0.76</td><td>0.53</td><td>0.36</td><td>0.50</td><td>0.50</td><td>1.50</td><td>0.78</td></tr>
+<tr><td class="meth">TAM</td><td><u>1.13</u></td><td><u>0.57</u></td><td>0.58</td><td>0.33</td><td>0.59</td><td><u>0.38</u></td><td><u>1.61</u></td><td><u>0.53</u></td></tr>
+<tr class="ours"><td class="meth">WISH</td><td><strong>1.25</strong></td><td><strong>0.51</strong></td><td>0.70</td><td><strong>0.24</strong></td><td><strong>0.72</strong></td><td><strong>0.32</strong></td><td><strong>1.91</strong></td><td><strong>0.51</strong></td></tr>
+</tbody></table></div>
+  </div>
+</section>
+
+<section class="section section-alt" id="bibtex">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3">BibTeX</h2>
+    <div class="bibtex-wrap">
+      <button class="button is-small copy-btn" id="copyBib" type="button"><span class="icon"><i class="far fa-copy"></i></span><span>Copy</span></button>
+      <!-- TODO after the arXiv announcement: put the arXiv number into journal -->
+      <pre id="bibtexText"><code>@article{wahba2026wish,
+  title   = {{WISH}: Word-Informed Selection of Heads for Vision-Language Explainability},
+  author  = {Wahba, Karim and Iyengar, Madhav and Bousselham, Walid and Kuehne, Hilde},
+  journal = {arXiv preprint},
+  year    = {2026}
+}</code></pre>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="content has-text-centered">
+    <p>Layout inspired by <a href="https://github.com/nerfies/nerfies.github.io">Nerfies</a>.</p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<script src="static/explorer/data.js"></script>
+<script src="static/explorer/lookahead.js"></script>
+<script src="static/method/data.js"></script>
+<script src="static/js/wish.js"></script>
+</body>
+</html>
