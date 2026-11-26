@@ -1,0 +1,15 @@
+---
+---
+
+@article{wahba2026wish,
+  abbr        = {arXiv},
+  bibtex_show = {true},
+  selected    = {true},
+  title       = {{WISH}: Word-Informed Selection of Heads for Vision-Language Explainability},
+  author      = {Wahba, Karim and Iyengar, Madhav and Bousselham, Walid and Kuehne, Hilde},
+  journal     = {arXiv preprint},
+  year        = {2026},
+  website     = {https://karim-wahba.github.io/wish/},
+  preview     = {wish_teaser.jpg},
+  abstract    = {Vision-language models (VLMs) are being increasingly employed for vision-language tasks. However, understanding the visual evidence behind each generated word remains a complex task. A key challenge in VLM explainability is choosing where in the model to extract this evidence. Existing methods address this by using final-layer visual-token activations or aggregating attention gradients across layers and heads. However, focusing on the final layer can miss intermediate grounding signals, while gradient weighting can misrepresent how much each head contributes. In contrast, we introduce WISH (Word-Informed Selection of Heads), a word-level explainability method that adaptively selects heads across layers to construct word-level visual explanations. WISH ranks the heads based on an estimate of how much blocking each head's visual attention would lower the word's layer logit. It subsequently selects the highest scoring heads and constructs heatmaps by spatially filtering and aggregating their gradient maps. Across six VLMs, attention knockout experiments show that WISH-selected heads have a greater effect on word prediction than those selected using five alternative criteria. Spatial map evaluations on ImageNet, VQAv2, PASCAL VOC, and COCO Captions further demonstrate improved object localization and stronger perturbation-based performance in most comparisons with existing methods. Finally, we find evidence that when VLMs generate function words, e.g., articles, their explanation heatmaps already highlight the associated objects in the image. We term this behavior ``look-ahead grounding'' and propose two evaluation metrics to quantify it.}
+}
